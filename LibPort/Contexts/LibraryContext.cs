@@ -17,6 +17,7 @@ namespace LibPort.Contexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(LibraryContext).Assembly);
             base.OnModelCreating(modelBuilder);
         }
     }
