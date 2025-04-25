@@ -10,7 +10,7 @@ namespace LibPort.Contexts.EntityConfigurations
         {
             builder.HasKey(u => u.Id);
 
-            builder.Property(u => u.UserName)
+            builder.Property(u => u.Username)
                 .IsRequired()
                 .HasMaxLength(80);
 
