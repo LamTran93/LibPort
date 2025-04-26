@@ -7,6 +7,7 @@ namespace LibPort.Services.Jwt
     {
         public string GenerateToken(IEnumerable<Claim> claims, TimeSpan timeToExpire);
         public string CreateAccessToken(User user);
+        public string RenewAccessToken(IEnumerable<Claim> claims);
         public string CreateRefreshToken(User user);
         public ClaimsPrincipal? GetClaimsPrincipal(string token);
     }

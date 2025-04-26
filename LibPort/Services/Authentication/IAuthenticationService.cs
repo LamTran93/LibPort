@@ -2,7 +2,7 @@
 {
     public interface IAuthenticationService
     {
-        public Task<TokenResponse> HandleLogin(string username, string password);
-        public TokenResponse HandleRefreshToken(string refreshToken);
+        public Task<TokenPackage> HandleLogin(string username, string password);
+        public TokenPackage HandleRefreshToken(string refreshToken);
     }
 }

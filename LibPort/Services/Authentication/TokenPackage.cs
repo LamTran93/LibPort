@@ -1,8 +1,8 @@
 ﻿namespace LibPort.Services.Authentication
 {
-    public class TokenResponse
+    public class TokenPackage
     {
         public string AccessToken { get; set; }
-        public string RefreshToKen { get; set; }
+        public string RefreshToken { get; set; }
     }
 }

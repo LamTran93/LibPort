@@ -1,5 +1,7 @@
 
 using LibPort.Contexts;
+using LibPort.Models;
+using LibPort.Services.Authentication;
 using LibPort.Services.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -38,9 +40,14 @@ namespace LibPort
                     };
                 });
 
-            builder.Services.AddAuthorization();
+            builder.Services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy("NormalUserOnly", p => p.RequireClaim("user_type", UserType.NormalUser.ToString()));
+                opt.AddPolicy("SuperUserOnly", p => p.RequireClaim("user_type", UserType.SuperUser.ToString()));
+            });
 
             builder.Services.AddSingleton<ITokenService, TokenService>();
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

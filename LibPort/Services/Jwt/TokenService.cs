@@ -16,9 +16,9 @@ namespace LibPort.Services.Jwt
 
         public TokenService(IConfiguration configuration)
         {
-            _issuer = configuration["Jwt:Issuer"] ?? "";
-            _audience = configuration["Jwt:Audience"] ?? "";
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"] ?? ""));
+            _issuer = configuration["Jwt:Issuer"]!;
+            _audience = configuration["Jwt:Audience"]!;
+            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!));
         }
 
         public string GenerateToken(IEnumerable<Claim> claims, TimeSpan timeToExpire)
@@ -42,6 +42,13 @@ namespace LibPort.Services.Jwt
             var tokenTypeClaim = new Claim("type", "access_token");
             var userTypeClaim = new Claim("user_type", user.UserType.ToString());
             return GenerateToken([tokenTypeClaim, userTypeClaim], _accessTokenExpireTime);
+        }
+
+        public string RenewAccessToken(IEnumerable<Claim> claims)
+        {
+            return GenerateToken(claims
+                .Where(c => c.Type != "iat" && c.Type != "aud" && c.Type != "type")
+                .Append(new Claim("type", "access_token")), _accessTokenExpireTime);
         }
 
         public string CreateRefreshToken(User user)

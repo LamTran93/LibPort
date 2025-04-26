@@ -16,20 +16,28 @@ namespace LibPort.Services.Authentication
             _context = context;
         }
 
-        public async Task<TokenResponse> HandleLogin(string username, string password)
+        public async Task<TokenPackage> HandleLogin(string username, string password)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
             if (user == null) throw new NotFoundException("User not found");
-            return new TokenResponse
+            return new TokenPackage
             {
                 AccessToken = _tokenService.CreateAccessToken(user),
-                RefreshToKen = _tokenService.CreateRefreshToken(user)
+                RefreshToken = _tokenService.CreateRefreshToken(user),
             };
         }
 
-        public TokenResponse HandleRefreshToken(string refreshToken)
+        public TokenPackage HandleRefreshToken(string refreshToken)
         {
-            throw new NotImplementedException();
+            var claimsprincipal = _tokenService.GetClaimsPrincipal(refreshToken);
+            if (claimsprincipal == null) throw new TokenInvalidException();
+            var newAccessToken = _tokenService.RenewAccessToken(claimsprincipal.Claims);
+            return new TokenPackage
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = refreshToken
+            };
         }
     }
 }
