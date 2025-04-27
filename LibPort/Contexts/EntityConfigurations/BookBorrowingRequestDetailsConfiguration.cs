@@ -10,6 +10,14 @@ namespace LibPort.Contexts.EntityConfigurations
         {
             builder.HasKey(d => d.Id);
 
+            builder.Property(d => d.Id)
+                .ValueGeneratedOnAdd();
+
+            builder.Property(d => d.CreatedAt)
+                .HasDefaultValueSql("getutcdate()");
+            builder.Property(d => d.UpdatedAt)
+                .HasDefaultValueSql("getutcdate()");
+
             builder.HasOne(d => d.Book)
                 .WithMany()
                 .HasForeignKey(d => d.BookId)

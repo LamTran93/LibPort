@@ -10,11 +10,19 @@ namespace LibPort.Contexts.EntityConfigurations
         {
             builder.HasKey(r => r.Id);
 
+            builder.Property(r => r.Id)
+                .HasDefaultValueSql("newsequentialid()");
+
             builder.Property(r => r.RequestedDate)
                 .IsRequired();
 
             builder.Property(r => r.Status)
                 .IsRequired();
+
+            builder.Property(r => r.CreatedAt)
+                .HasDefaultValueSql("getutcdate()");
+            builder.Property(r => r.UpdatedAt)
+                .HasDefaultValueSql("getutcdate()");
 
             builder.HasOne(r => r.Requestor)
                 .WithMany(u => u.BorrowingRequests)

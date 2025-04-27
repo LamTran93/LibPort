@@ -1,7 +1,7 @@
 ﻿using LibPort.Contexts;
 using LibPort.Models;
-using LibPort.Services.Jwt;
-using Microsoft.AspNetCore.Http;
+using LibPort.Services.Authentication;
+using LibPort.Services.BookService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibPort.Controllers
@@ -10,22 +10,18 @@ namespace LibPort.Controllers
     [ApiController]
     public class TestController : ControllerBase
     {
-        private readonly ITokenService _tokenService;
         private readonly LibraryContext _context;
 
-        public TestController(ITokenService tokenService, LibraryContext context)
+        public TestController(LibraryContext context)
         {
-            _tokenService = tokenService;
             _context = context;
         }
 
         [HttpGet]
         public IActionResult Get()
         {
-            var user1 = new User
-            { Username = "lamtran", Password = "12345678", Email = "lamtran@yahoo.com", UserType = UserType.NormalUser };
-            var user2 = new User
-            { Username = "admin", Password = "12345678", Email = "lamtran@yahoo.com", UserType = UserType.SuperUser };
+            var user1 = new User { Username = "user", Password = "1234", UserType = UserType.NormalUser, Email = "user@libport.com" };
+            var user2 = new User { Username = "admin", Password = "1234", UserType = UserType.SuperUser, Email = "admin@libport.com" };
             _context.Users.AddRange([user1, user2]);
             _context.SaveChanges();
             return Ok();

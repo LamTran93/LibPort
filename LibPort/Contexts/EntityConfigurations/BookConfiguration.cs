@@ -10,6 +10,9 @@ namespace LibPort.Contexts.EntityConfigurations
         {
             builder.HasKey(b => b.Id);
 
+            builder.Property(b => b.Id)
+                .HasDefaultValueSql("newsequentialid()");
+
             builder.Property(b => b.Title)
                 .IsRequired()
                 .HasMaxLength(200);
@@ -20,6 +23,11 @@ namespace LibPort.Contexts.EntityConfigurations
             builder.Property(b => b.Author)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            builder.Property(b => b.CreatedAt)
+                .HasDefaultValueSql("getutcdate()");
+            builder.Property(b => b.UpdatedAt)
+                .HasDefaultValueSql("getutcdate()");
 
             builder.HasOne(b => b.Category)
                 .WithMany(c => c.Books)

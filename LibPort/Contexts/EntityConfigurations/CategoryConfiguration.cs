@@ -10,9 +10,17 @@ namespace LibPort.Contexts.EntityConfigurations
         {
             builder.HasKey(c => c.Id);
 
+            builder.Property(c => c.Id)
+                .ValueGeneratedOnAdd();
+
             builder.Property(c => c.Name)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            builder.Property(c => c.CreatedAt)
+                .HasDefaultValueSql("getutcdate()");
+            builder.Property(c => c.UpdatedAt)
+                .HasDefaultValueSql("getutcdate()");
         }
     }
 }

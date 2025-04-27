@@ -10,6 +10,9 @@ namespace LibPort.Contexts.EntityConfigurations
         {
             builder.HasKey(u => u.Id);
 
+            builder.Property(u => u.Id)
+                .HasDefaultValueSql("newsequentialid()");
+
             builder.Property(u => u.Username)
                 .IsRequired()
                 .HasMaxLength(80);
@@ -24,6 +27,11 @@ namespace LibPort.Contexts.EntityConfigurations
 
             builder.Property(u => u.UserType)
                 .IsRequired();
+
+            builder.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("getutcdate()");
+            builder.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("getutcdate()");
 
             builder.HasMany(u => u.BorrowingRequests)
                 .WithOne(r => r.Requestor)
