@@ -1,5 +1,6 @@
 ﻿using LibPort.Dto.Request;
 using LibPort.Dto.Response;
+using LibPort.Exceptions;
 using LibPort.Models;
 
 namespace LibPort.Dto.Mapper
@@ -32,7 +33,7 @@ namespace LibPort.Dto.Mapper
 
         public static Book ToEntity(this RequestBook request)
         {
-            Guid.TryParse(request.Id, out var id);
+            if (!Guid.TryParse(request.Id, out var id)) throw new NotValidIdException("Id is not guid");
             return new Book
             {
                 Id = id,

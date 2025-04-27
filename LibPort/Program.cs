@@ -2,6 +2,8 @@
 using LibPort.Contexts;
 using LibPort.Models;
 using LibPort.Services.Authentication;
+using LibPort.Services.BookService;
+using LibPort.Services.CategoryService;
 using LibPort.Services.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +50,8 @@ namespace LibPort
 
             builder.Services.AddSingleton<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<IBookService, BookService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

@@ -1,6 +1,8 @@
-﻿using LibPort.Dto.Mapper;
+﻿using Azure.Core;
+using LibPort.Dto.Mapper;
 using LibPort.Dto.Request;
 using LibPort.Dto.Response;
+using LibPort.Exceptions;
 using LibPort.Services.BookService;
 using LibPort.Services.CategoryService;
 using Microsoft.AspNetCore.Http;
@@ -60,7 +62,7 @@ namespace LibPort.Controllers
         [HttpPost("books")]
         public async Task<ActionResult<ShowBook>> CreateBook(RequestBook request)
         {
-            request.Id = Guid.Empty;
+            request.Id = default;
             var book = request.ToEntity();
 
             try
@@ -77,7 +79,49 @@ namespace LibPort.Controllers
         [HttpPut("books/{id}")]
         public async Task<ActionResult> EditBook(string id, RequestBook request)
         {
-            if (request.Id.ToString() != id) return BadRequest();
+            if (id != request.Id) return BadRequest();
+
+            try
+            {
+                await _bookService.UpdateAsync(request.ToEntity());
+                return NoContent();
+            }
+            catch (NotFoundException)
+            { 
+                return NotFound(); 
+            }
+            catch (NotValidIdException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error edit book");
+            }
+        }
+
+        [HttpDelete("books/{id}")]
+        public async Task<ActionResult> DeleteBook(string id)
+        {
+            try
+            {
+                if (!Guid.TryParse(id, out var bookId))
+                    return BadRequest("Not a valid Id");
+                await _bookService.DeleteAsync(bookId);
+                return NoContent();
+            }
+            catch (NotFoundException)
+            {
+                return NotFound();
+            }
+            catch (NotValidIdException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error edit book");
+            }
         }
     }
 }
