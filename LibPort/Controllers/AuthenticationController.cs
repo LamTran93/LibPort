@@ -1,4 +1,5 @@
-﻿using LibPort.Dto.Request;
+﻿using LibPort.Dto.Mapper;
+using LibPort.Dto.Request;
 using LibPort.Exceptions;
 using LibPort.Services.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -19,42 +20,36 @@ namespace LibPort.Controllers
         [HttpPost("login")]
         public async Task<ActionResult> Login(LoginInfo info)
         {
-            try
-            {
-                var tokens = await _authenticationService.HandleLogin(info.Username, info.Password);
+            var tokens = await _authenticationService.HandleLogin(info.Username, info.Password);
 
-                HttpContext.Response.Cookies.Append("RefreshToken", tokens.RefreshToken, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTimeOffset.UtcNow.AddDays(12)
-                });
-                return Ok(new { tokens.AccessToken });
-            }
-            catch (NotFoundException ex)
+            HttpContext.Response.Cookies.Append("RefreshToken", tokens.RefreshToken, new CookieOptions
             {
-                return Unauthorized();
-            }
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(12)
+            });
+            return Ok(new { tokens.AccessToken });
         }
 
         [HttpGet("refreshToken")]
         public async Task<ActionResult> Refresh()
         {
-            try
+            var token = HttpContext.Request.Cookies
+                .FirstOrDefault(c => c.Key == "RefreshToken");
+            if (token.Key == null || token.Value == null)
             {
-                var token = HttpContext.Request.Cookies
-                    .FirstOrDefault(c => c.Key == "RefreshToken");
-                if (token.Key == null || token.Value == null)
-                {
-                    return BadRequest("No token found");
-                }
-                return Ok(new { _authenticationService.HandleRefreshToken(token.Value).AccessToken });
+                return BadRequest("No token found");
             }
-            catch (TokenInvalidException)
-            {
-                return BadRequest("Invalid Token");
-            }
+            return Ok(new { _authenticationService.HandleRefreshToken(token.Value).AccessToken });
+        }
+
+        [HttpPost("register")]
+        public async Task<ActionResult> Register(RequestUser request)
+        {
+            var user = request.ToEntity();
+            await _authenticationService.HandleRegister(user);
+            return Created();
         }
     }
 }

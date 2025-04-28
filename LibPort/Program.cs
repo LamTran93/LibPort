@@ -1,5 +1,6 @@
 
 using LibPort.Contexts;
+using LibPort.Exceptions.ExceptionHandlers;
 using LibPort.Models;
 using LibPort.Services.Authentication;
 using LibPort.Services.BookService;
@@ -48,10 +49,14 @@ namespace LibPort
                 opt.AddPolicy("SuperUserOnly", p => p.RequireClaim("user_type", UserType.SuperUser.ToString()));
             });
 
+            builder.Services.AddExceptionHandler<ExceptionHandler>();
+            builder.Services.AddProblemDetails();
+
             builder.Services.AddSingleton<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -71,6 +76,8 @@ namespace LibPort
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.UseExceptionHandler();
 
             app.Run();
         }

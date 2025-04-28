@@ -1,7 +1,9 @@
 ﻿using LibPort.Contexts;
+using LibPort.Dto.Response;
 using LibPort.Exceptions;
 using LibPort.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace LibPort.Services.BookService
 {
@@ -14,9 +16,14 @@ namespace LibPort.Services.BookService
             _context = context;
         }
 
-        public List<Book> List(Func<Book, bool> predicate)
+        public async Task<List<Book>> ListWhereAsync(Expression<Func<Book, bool>> predicate)
         {
-            return _context.Books.Where(predicate).ToList();
+            return await _context.Books.Where(predicate).ToListAsync();
+        }
+
+        public async Task<PaginationResponse<Book, string>> ListPaginationAsync()
+        {
+
         }
 
         public async Task<List<Book>> ListAsync()

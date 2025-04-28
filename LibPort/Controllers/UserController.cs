@@ -19,7 +19,5 @@ namespace LibPort.Controllers
             _bookService = bookService;
             _categoryService = categoryService;
         }
-
-
     }
 }

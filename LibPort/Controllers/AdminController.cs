@@ -1,13 +1,10 @@
-﻿using Azure.Core;
-using LibPort.Dto.Mapper;
+﻿using LibPort.Dto.Mapper;
 using LibPort.Dto.Request;
 using LibPort.Dto.Response;
-using LibPort.Exceptions;
 using LibPort.Services.BookService;
 using LibPort.Services.CategoryService;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using LibPort.Models;
 
 namespace LibPort.Controllers
 {
@@ -25,38 +22,26 @@ namespace LibPort.Controllers
         }
 
         [HttpGet("books")]
-        public async Task<ActionResult<List<ShowBook>>> ListAllBooks()
+        public async Task<ActionResult<List<ShowBook>>> ListBooks(
+            [FromQuery] string _page,
+            [FromQuery] string _perPage
+            )
         {
-            try
-            {
-                var allBooks = await _bookService.ListAsync();
-                return allBooks.Select(b => b.ToShow()).ToList();
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error getting books");
-            }
-
+            var allBooks = await _bookService.ListAsync();
+            return allBooks.Select(b => b.ToShow()).ToList();
         }
 
         [HttpGet("books/{id}")]
         public async Task<ActionResult<ShowBook>> GetBook(string id)
         {
-            try
-            {
-                if (!Guid.TryParse(id, out var bookId))
-                    return BadRequest("Not a valid Id");
+            if (!Guid.TryParse(id, out var bookId))
+                return BadRequest("Not a valid Id");
 
-                var book = await _bookService.GetAsync(bookId);
+            var book = await _bookService.GetAsync(bookId);
 
-                if (book == null) return NotFound();
+            if (book == null) return NotFound();
 
-                return Ok(book.ToShow());
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error getting book");
-            }
+            return Ok(book.ToShow());
         }
 
         [HttpPost("books")]
@@ -65,63 +50,81 @@ namespace LibPort.Controllers
             request.Id = default;
             var book = request.ToEntity();
 
-            try
-            {
-                var entity = await _bookService.CreateAsync(book);
-                return CreatedAtAction("GetBook", new { id = entity.Id }, entity);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error creating book");
-            }
+            var entity = await _bookService.CreateAsync(book);
+            return CreatedAtAction("GetBook", new { id = entity.Id }, entity);
+
         }
 
         [HttpPut("books/{id}")]
         public async Task<ActionResult> EditBook(string id, RequestBook request)
         {
-            if (id != request.Id) return BadRequest();
+            if (!id.Equals(request.Id)) return BadRequest();
 
-            try
-            {
-                await _bookService.UpdateAsync(request.ToEntity());
-                return NoContent();
-            }
-            catch (NotFoundException)
-            { 
-                return NotFound(); 
-            }
-            catch (NotValidIdException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error edit book");
-            }
+            await _bookService.UpdateAsync(request.ToEntity());
+            return NoContent();
+
         }
 
         [HttpDelete("books/{id}")]
         public async Task<ActionResult> DeleteBook(string id)
         {
-            try
-            {
-                if (!Guid.TryParse(id, out var bookId))
-                    return BadRequest("Not a valid Id");
-                await _bookService.DeleteAsync(bookId);
-                return NoContent();
-            }
-            catch (NotFoundException)
-            {
-                return NotFound();
-            }
-            catch (NotValidIdException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error edit book");
-            }
+            if (!Guid.TryParse(id, out var bookId))
+                return BadRequest("Not a valid Id");
+            await _bookService.DeleteAsync(bookId);
+            return NoContent();
+        }
+
+        [HttpGet("categories")]
+        public async Task<ActionResult<List<ShowCategory>>> ListAllCategories()
+        {
+            var allCategories = await _categoryService.ListAsync();
+            return allCategories.Select(b => b.ToShow()).ToList();
+        }
+
+        [HttpGet("categories/{id}")]
+        public async Task<ActionResult<ShowCategory>> GetCategory(int id)
+        {
+            var category = await _categoryService.GetAsync(id);
+
+            if (category == null) return NotFound();
+
+            return Ok(category.ToShow());
+        }
+
+        [HttpPost("categories")]
+        public async Task<ActionResult<ShowCategory>> CreateCategory(ShowCategory category)
+        {
+            if (string.IsNullOrEmpty(category.Name))
+                return BadRequest("Category name is required");
+
+            var entity = await _categoryService.CreateAsync(category.ToEntity());
+            return CreatedAtAction("GetCategory", new { id = entity.Id }, entity);
+
+        }
+
+        [HttpPut("categories/{id}")]
+        public async Task<ActionResult> EditCategory(string id, ShowCategory category)
+        {
+            if (!id.Equals(category.Id.ToString())) return BadRequest();
+
+            await _categoryService.UpdateAsync(category.ToEntity());
+            return NoContent();
+
+        }
+
+        [HttpDelete("categories/{id}")]
+        public async Task<ActionResult> DeleteCategory(string id)
+        {
+            if (!int.TryParse(id, out var bookId))
+                return BadRequest("Not a valid Id");
+            await _categoryService.DeleteAsync(bookId);
+            return NoContent();
+        }
+
+        [HttpGet("borrowing-requests")]
+        public async Task<ActionResult<BookBorrowingRequest>> GetRequests()
+        {
+
         }
     }
 }
