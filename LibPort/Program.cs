@@ -1,6 +1,5 @@
-
 using LibPort.Contexts;
-using LibPort.Exceptions.ExceptionHandlers;
+using LibPort.Middlewares.ExceptionHandlers;
 using LibPort.Models;
 using LibPort.Services.Authentication;
 using LibPort.Services.BookService;
@@ -8,7 +7,10 @@ using LibPort.Services.CategoryService;
 using LibPort.Services.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
 
 namespace LibPort
 {
@@ -19,11 +21,11 @@ namespace LibPort
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllers();
 
             builder.Services.AddDbContext<LibraryContext>
-                (opt => opt.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"]));
+                (opt => opt.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"]
+                .Replace("{password}", Environment.GetEnvironmentVariable("LibPortDefaultConnectionPassword"))));
 
             builder.Services
                 .AddAuthentication(o =>
@@ -33,13 +35,29 @@ namespace LibPort
                 })
                 .AddJwtBearer(o =>
                 {
-                    o.Authority = builder.Configuration["Jwt:Authority"];
-                    o.Audience = builder.Configuration["Jwt:Audience"];
                     o.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
                         ValidateAudience = true,
-                        ValidateIssuerSigningKey = true
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("LibPortSecretKey")!))
+                    };
+
+                    o.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+
+                            if (!string.IsNullOrEmpty(authHeader) && !authHeader.StartsWith("Bearer "))
+                            {
+                                context.Token = authHeader;
+                            }
+
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
@@ -59,7 +77,31 @@ namespace LibPort
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            new string[] {}
+                        }
+                    });
+            });
 
             var app = builder.Build();
 

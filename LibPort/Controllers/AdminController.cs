@@ -5,11 +5,13 @@ using LibPort.Services.BookService;
 using LibPort.Services.CategoryService;
 using Microsoft.AspNetCore.Mvc;
 using LibPort.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LibPort.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = "SuperUserOnly")]
     public class AdminController : ControllerBase
     {
         private readonly IBookService _bookService;
@@ -124,7 +126,7 @@ namespace LibPort.Controllers
         [HttpGet("borrowing-requests")]
         public async Task<ActionResult<BookBorrowingRequest>> GetRequests()
         {
-
+            return Ok();
         }
     }
 }

@@ -18,7 +18,7 @@ namespace LibPort.Services.Jwt
         {
             _issuer = configuration["Jwt:Issuer"]!;
             _audience = configuration["Jwt:Audience"]!;
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!));
+            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("LibPortSecretKey")!));
         }
 
         public string GenerateToken(IEnumerable<Claim> claims, TimeSpan timeToExpire)

@@ -13,8 +13,10 @@ namespace LibPort.Dto.Mapper
             {
                 Id = book.Id,
                 Author = book.Author,
-                Category = book.Category.ToShow(),
+                Category = book.Category?.ToShow(),
                 Title = book.Title,
+                Quantity = book.Quantity,
+                Total = book.Total,
                 Description = book.Description,
             };
         }
@@ -25,8 +27,10 @@ namespace LibPort.Dto.Mapper
             {
                 Id = show.Id,
                 Author = show.Author,
-                Category = show.Category.ToEntity(),
+                Category = show.Category?.ToEntity(),
                 Title = show.Title,
+                Quantity = show.Quantity,
+                Total = show.Total,
                 Description = show.Description,
             };
         }
@@ -40,6 +44,8 @@ namespace LibPort.Dto.Mapper
                 Author = request.Author,
                 CategoryId = request.CategoryId,
                 Title = request.Title,
+                Quantity = request.Quantity,
+                Total = request.Total,
                 Description = request.Description,
             };
         }

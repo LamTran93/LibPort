@@ -10,6 +10,5 @@
         public ICollection<BookBorrowingRequestDetails> Details { get; set; }
         public User Requestor { get; set; }
         public User Approver { get; set; }
-        
     }   
 }

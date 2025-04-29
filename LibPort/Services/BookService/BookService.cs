@@ -23,7 +23,7 @@ namespace LibPort.Services.BookService
 
         public async Task<PaginationResponse<Book, string>> ListPaginationAsync()
         {
-
+            throw new NotImplementedException();
         }
 
         public async Task<List<Book>> ListAsync()

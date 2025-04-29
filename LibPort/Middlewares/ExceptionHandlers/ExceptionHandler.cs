@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+﻿using LibPort.Exceptions;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LibPort.Exceptions.ExceptionHandlers
+namespace LibPort.Middlewares.ExceptionHandlers
 {
     public class ExceptionHandler : IExceptionHandler
     {

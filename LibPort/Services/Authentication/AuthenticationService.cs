@@ -2,6 +2,7 @@
 using LibPort.Exceptions;
 using LibPort.Models;
 using LibPort.Services.Jwt;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibPort.Services.Authentication
@@ -20,8 +21,9 @@ namespace LibPort.Services.Authentication
         public async Task<TokenPackage> HandleLogin(string username, string password)
         {
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username.Equals(username) && u.Password.Equals(password));
-            if (user == null) throw new NotFoundException($"Can't find user with username & password combination");
+                .FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
+                throw new NotFoundException($"Can't find user with username & password combination");
             return new TokenPackage
             {
                 AccessToken = _tokenService.CreateAccessToken(user),
@@ -32,6 +34,11 @@ namespace LibPort.Services.Authentication
         public async Task<User> HandleRegister(User user)
         {
             if (user.Id != Guid.Empty) user.Id = Guid.NewGuid();
+            var isUsernameAndEmailExisted = await _context.Users
+                .AnyAsync(u => u.Username == user.Username || u.Email == user.Email);
+            if (isUsernameAndEmailExisted)
+                throw new NotValidIdException("Username or email already existed");
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             var result = await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
             return result.Entity;

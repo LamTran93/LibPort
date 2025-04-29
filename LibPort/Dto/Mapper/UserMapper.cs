@@ -1,6 +1,7 @@
 ﻿using LibPort.Dto.Request;
 using LibPort.Models;
 using LibPort.Exceptions;
+using LibPort.Dto.Response;
 
 namespace LibPort.Dto.Mapper
 {
@@ -16,6 +17,26 @@ namespace LibPort.Dto.Mapper
                 Username = request.Username,
                 Email = request.Email,
                 Password = request.Password,
+            };
+        }
+
+        public static ShowUser ToShow(this User entity)
+        {
+            return new ShowUser
+            {
+                Id = entity.Id,
+                Username = entity.Username,
+                Email = entity.Email,
+            };
+        }
+
+        public static User ToEntity(this ShowUser show)
+        {
+            return new User
+            {
+                Id = show.Id,
+                Username = show.Username,
+                Email = show.Email,
             };
         }
     }
