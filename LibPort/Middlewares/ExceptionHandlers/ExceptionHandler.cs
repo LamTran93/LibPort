@@ -32,6 +32,16 @@ namespace LibPort.Middlewares.ExceptionHandlers
                     problemDetails.Title = "Invalid token";
                     problemDetails.Detail = exception.Message;
                     break;
+                case NotEnoughBookException:
+                    problemDetails.Status = StatusCodes.Status409Conflict;
+                    problemDetails.Title = "Not enough book";
+                    problemDetails.Detail = exception.Message;
+                    break;
+                case DataConflictException:
+                    problemDetails.Status = StatusCodes.Status409Conflict;
+                    problemDetails.Title = "Data conflict";
+                    problemDetails.Detail = exception.Message;
+                    break;
                 default:
                     problemDetails.Status = StatusCodes.Status500InternalServerError;
                     problemDetails.Title = "Internal Server Error";

@@ -3,6 +3,7 @@ using LibPort.Middlewares.ExceptionHandlers;
 using LibPort.Models;
 using LibPort.Services.Authentication;
 using LibPort.Services.BookService;
+using LibPort.Services.BorrowingRequest;
 using LibPort.Services.CategoryService;
 using LibPort.Services.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -74,6 +75,7 @@ namespace LibPort
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IBorrowingRequestService, BorrowingRequestService>();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

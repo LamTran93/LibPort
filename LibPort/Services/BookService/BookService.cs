@@ -16,9 +16,13 @@ namespace LibPort.Services.BookService
             _context = context;
         }
 
-        public async Task<List<Book>> ListWhereAsync(Expression<Func<Book, bool>> predicate)
+        public async Task<List<Book>> GetPagination(int page, int perPage)
         {
-            return await _context.Books.Where(predicate).ToListAsync();
+            return await _context.Books
+                .OrderBy(x => x.Title)
+                .Skip((page - 1) * perPage)
+                .Take(perPage)
+                .ToListAsync();
         }
 
         public async Task<PaginationResponse<Book, string>> ListPaginationAsync()

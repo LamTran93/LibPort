@@ -14,8 +14,10 @@ namespace LibPort.Contexts.EntityConfigurations
                 .ValueGeneratedOnAdd();
 
             builder.Property(d => d.CreatedAt)
+                .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("getutcdate()");
             builder.Property(d => d.UpdatedAt)
+                .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("getutcdate()");
 
             builder.HasOne(d => d.Book)

@@ -25,9 +25,14 @@ namespace LibPort.Contexts.EntityConfigurations
                 .IsRequired()
                 .HasMaxLength(100);
 
+            builder.Property(b => b.Version)
+                .IsRowVersion();
+
             builder.Property(b => b.CreatedAt)
+                .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("getutcdate()");
             builder.Property(b => b.UpdatedAt)
+                .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("getutcdate()");
 
             builder.HasOne(b => b.Category)

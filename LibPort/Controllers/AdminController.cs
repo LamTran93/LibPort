@@ -4,8 +4,8 @@ using LibPort.Dto.Response;
 using LibPort.Services.BookService;
 using LibPort.Services.CategoryService;
 using Microsoft.AspNetCore.Mvc;
-using LibPort.Models;
 using Microsoft.AspNetCore.Authorization;
+using LibPort.Services.BorrowingRequest;
 
 namespace LibPort.Controllers
 {
@@ -16,21 +16,34 @@ namespace LibPort.Controllers
     {
         private readonly IBookService _bookService;
         private readonly ICategoryService _categoryService;
+        private readonly IBorrowingRequestService _borrowingService;
 
-        public AdminController(IBookService bookService, ICategoryService categoryService)
+        public AdminController(IBookService bookService, ICategoryService categoryService, IBorrowingRequestService borrowingService)
         {
             _bookService = bookService;
             _categoryService = categoryService;
+            _borrowingService = borrowingService;
         }
 
         [HttpGet("books")]
         public async Task<ActionResult<List<ShowBook>>> ListBooks(
-            [FromQuery] string _page,
-            [FromQuery] string _perPage
+            [FromQuery] string? _page,
+            [FromQuery] string? _perPage
             )
         {
-            var allBooks = await _bookService.ListAsync();
-            return allBooks.Select(b => b.ToShow()).ToList();
+            if (string.IsNullOrWhiteSpace(_page))
+            {
+                var allBooks = await _bookService.ListAsync();
+                return allBooks.Select(b => b.ToShow()).ToList();
+            }
+            else
+            {
+                var pageParseSuccess = int.TryParse(_page, out var page);
+                var perPageParseSuccess = int.TryParse(_perPage, out var perPage);
+                if (!(pageParseSuccess && perPageParseSuccess)) return BadRequest("Could not parse the query");
+                var pageBook = await _bookService.GetPagination(page, perPage);
+                return pageBook.Select(b => b.ToShow()).ToList();
+            }
         }
 
         [HttpGet("books/{id}")]
@@ -124,9 +137,28 @@ namespace LibPort.Controllers
         }
 
         [HttpGet("borrowing-requests")]
-        public async Task<ActionResult<BookBorrowingRequest>> GetRequests()
+        public async Task<ActionResult<List<ShowBookBorrowingRequest>>> GetRequests()
         {
-            return Ok();
+            var requests = await _borrowingService.ListAsync();
+            return requests.Select(r => r.ToShow()).ToList();
+        }
+
+        [HttpPut("borrowing-requests/{id}/approve")]
+        public async Task<ActionResult> ApproveRequest(string id)
+        {
+            var parseSuccess = Guid.TryParse(id, out var requestId);
+            if (!parseSuccess) return BadRequest("Not a vadid id");
+            await _borrowingService.ApproveRequest(requestId);
+            return NoContent();
+        }
+
+        [HttpPut("borrowing-requests/{id}/reject")]
+        public async Task<ActionResult> RejectRequest(string id)
+        {
+            var parseSuccess = Guid.TryParse(id, out var requestId);
+            if (!parseSuccess) return BadRequest("Not a vadid id");
+            await _borrowingService.RejectRequest(requestId);
+            return NoContent();
         }
     }
 }

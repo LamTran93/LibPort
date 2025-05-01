@@ -29,8 +29,10 @@ namespace LibPort.Contexts.EntityConfigurations
                 .IsRequired();
 
             builder.Property(e => e.CreatedAt)
+                .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("getutcdate()");
             builder.Property(e => e.UpdatedAt)
+                .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("getutcdate()");
 
             builder.HasMany(u => u.BorrowingRequests)

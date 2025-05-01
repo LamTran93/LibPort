@@ -18,8 +18,10 @@ namespace LibPort.Contexts.EntityConfigurations
                 .HasMaxLength(100);
 
             builder.Property(c => c.CreatedAt)
+                .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("getutcdate()");
             builder.Property(c => c.UpdatedAt)
+                .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("getutcdate()");
 
             builder.HasData(
