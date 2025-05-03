@@ -41,7 +41,8 @@ namespace LibPort.Services.Jwt
         {
             var tokenTypeClaim = new Claim("type", "access_token");
             var userTypeClaim = new Claim("user_type", user.UserType.ToString());
-            return GenerateToken([tokenTypeClaim, userTypeClaim], _accessTokenExpireTime);
+            var userIdClaim = new Claim("user_id", user.Id.ToString());
+            return GenerateToken([tokenTypeClaim, userTypeClaim, userIdClaim], _accessTokenExpireTime);
         }
 
         public string RenewAccessToken(IEnumerable<Claim> claims)
@@ -55,7 +56,8 @@ namespace LibPort.Services.Jwt
         {
             var tokenTypeClaim = new Claim("type", "refresh_token");
             var userTypeClaim = new Claim("user_type", user.UserType.ToString());
-            return GenerateToken([tokenTypeClaim, userTypeClaim], _refreshTokenExpireTime);
+            var userIdClaim = new Claim("user_id", user.Id.ToString());
+            return GenerateToken([tokenTypeClaim, userTypeClaim, userIdClaim], _refreshTokenExpireTime);
         }
 
         public ClaimsPrincipal? GetClaimsPrincipal(string token)

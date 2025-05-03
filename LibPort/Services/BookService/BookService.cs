@@ -1,9 +1,9 @@
 ﻿using LibPort.Contexts;
+using LibPort.Dto.Request;
 using LibPort.Dto.Response;
 using LibPort.Exceptions;
 using LibPort.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace LibPort.Services.BookService
 {
@@ -16,23 +16,63 @@ namespace LibPort.Services.BookService
             _context = context;
         }
 
-        public async Task<List<Book>> GetPagination(int page, int perPage)
+        public async Task<PaginationResponse<Book>> GetPaginationAsync(int page, int perPage)
         {
-            return await _context.Books
+            var result = new PaginationResponse<Book>();
+            result.Items = await _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Reviews)
                 .OrderBy(x => x.Title)
                 .Skip((page - 1) * perPage)
                 .Take(perPage)
                 .ToListAsync();
+            var bookQuantity = await _context.Books.CountAsync();
+            result.Pages = bookQuantity / perPage;
+            result.Last = result.Pages;
+            result.Total = bookQuantity;
+            result.First = 1;
+            result.Current = page;
+            result.Next = page == result.Last ? (result.Last) : (page + 1);
+            result.Prev = page == result.First ? (result.First) : (page - 1);
+            return result;
         }
 
-        public async Task<PaginationResponse<Book, string>> ListPaginationAsync()
+        public async Task<PaginationResponse<Book>> FilterAsync(FilterOption options, int page, int perPage)
         {
-            throw new NotImplementedException();
+            var result = new PaginationResponse<Book>();
+            var items = _context.Books
+                .Include(b => b.Category)
+                .Include(b => b.Reviews)
+                .AsQueryable();
+            if (!string.IsNullOrWhiteSpace(options.Title))
+                items = items.Where(b => EF.Functions.Like(b.Title, $"%{options.Title}%"));
+            if (options.CategoryId != null)
+                items = items.Where(b => b.CategoryId == options.CategoryId);
+            if (options.IsAvailable == true)
+                items = items.Where(b => b.Quantity > 0);
+            else if (options.IsAvailable == false)
+                items = items.Where(b => b.Quantity == 0);
+            if (options.MinimumRating != null)
+                items = items.Where(b => b.Reviews.Average(r => r.Rating) <= 0 || b.Reviews.Average(r => r.Rating) > options.MinimumRating);
+            result.Items = await items
+                .OrderBy(x => x.Title)
+                .Skip((page - 1) * perPage)
+                .Take(perPage)
+                .ToListAsync();
+            var bookQuantity = await items.CountAsync();
+            result.Pages = bookQuantity / perPage;
+            result.Last = result.Pages;
+            result.Total = bookQuantity;
+            result.First = 1;
+            result.Current = page;
+            result.Next = page == result.Last ? (result.Last) : (page + 1);
+            result.Prev = page == result.First ? (result.First) : (page - 1);
+            return result;
         }
 
         public async Task<List<Book>> ListAsync()
         {
-            return await _context.Books.ToListAsync();
+            return await _context.Books.Include(b => b.Reviews).ToListAsync();
         }
 
         public async Task<Book?> GetAsync(Guid id)

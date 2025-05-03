@@ -27,6 +27,7 @@ namespace LibPort.Dto.Mapper
                 Id = entity.Id,
                 Username = entity.Username,
                 Email = entity.Email,
+                UserType = entity.UserType
             };
         }
 
@@ -37,6 +38,7 @@ namespace LibPort.Dto.Mapper
                 Id = show.Id,
                 Username = show.Username,
                 Email = show.Email,
+                UserType = show.UserType
             };
         }
     }

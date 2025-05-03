@@ -1,13 +1,14 @@
 ﻿namespace LibPort.Dto.Response
 {
-    public class PaginationResponse<TEntity, TOrderBy>
+    public class PaginationResponse<TEntity>
     {
-        public TOrderBy First { get; set; }
-        public TOrderBy Last { get; set; }
-        public TOrderBy Prev { get; set; }
-        public TOrderBy Next { get; set; }
+        public int First { get; set; }
+        public int Last { get; set; }
+        public int Current { get; set; }
+        public int Prev { get; set; }
+        public int Next { get; set; }
+        public int Total { get; set; }
         public int Pages { get; set; }
-        public int Items { get; set; }
-        public List<TOrderBy> OrderBy { get; set; }
+        public List<TEntity> Items { get; set; }
     }
 }

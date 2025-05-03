@@ -18,30 +18,21 @@ namespace LibPort.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult> Login(LoginInfo info)
+        public async Task<ActionResult<TokenPackage>> Login(LoginInfo info)
         {
             var tokens = await _authenticationService.HandleLogin(info.Username, info.Password);
 
-            HttpContext.Response.Cookies.Append("RefreshToken", tokens.RefreshToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddDays(12)
-            });
-            return Ok(new { tokens.AccessToken });
+            return Ok(tokens);
         }
 
-        [HttpGet("refreshToken")]
-        public async Task<ActionResult> Refresh()
+        [HttpPost("refreshToken")]
+        public async Task<ActionResult<TokenPackage>> Refresh(RequestToken tokens)
         {
-            var token = HttpContext.Request.Cookies
-                .FirstOrDefault(c => c.Key == "RefreshToken");
-            if (token.Key == null || token.Value == null)
+            if (string.IsNullOrWhiteSpace(tokens.RefreshToken))
             {
                 return BadRequest("No token found");
             }
-            return Ok(new { _authenticationService.HandleRefreshToken(token.Value).AccessToken });
+            return Ok(_authenticationService.HandleRefreshToken(tokens.RefreshToken));
         }
 
         [HttpPost("register")]

@@ -1,4 +1,5 @@
 ﻿using LibPort.Contexts;
+using LibPort.Dto.Mapper;
 using LibPort.Exceptions;
 using LibPort.Models;
 using LibPort.Services.Jwt;
@@ -28,6 +29,7 @@ namespace LibPort.Services.Authentication
             {
                 AccessToken = _tokenService.CreateAccessToken(user),
                 RefreshToken = _tokenService.CreateRefreshToken(user),
+                User = user.ToShow()
             };
         }
 

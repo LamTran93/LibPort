@@ -6,6 +6,7 @@ using LibPort.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq.Expressions;
+using System.Net;
 
 namespace LibPort.Services.BorrowingRequest
 {
@@ -18,8 +19,14 @@ namespace LibPort.Services.BorrowingRequest
             _context = context;
         }
 
-        public async Task RequestBorrowingBooks(User user, List<Guid> bookIds)
+        public async Task RequestBorrowingBooks(Guid userId, List<Guid> bookIds)
         {
+            if (bookIds.Count > 5) throw new BookExceedLimitException($"Books quantity exceed limit ({bookIds.Count}/5");
+            var thisMonthRequestCount = await _context.BookBorrowingRequests
+                                                .Where(r => r.RequestedDate.Month == DateTime.Now.Month)
+                                                .CountAsync();
+            if (thisMonthRequestCount >= 3) throw new ExceedRequestLimitException("Book requests exceed limit(3/3)");
+
             var borrowingDetails = new List<BookBorrowingRequestDetails>();
             foreach (var bookId in bookIds)
             {
@@ -27,7 +34,7 @@ namespace LibPort.Services.BorrowingRequest
             }
             var borrowingRequest = new BookBorrowingRequest
             {
-                RequestorId = user.Id,
+                RequestorId = userId,
                 RequestedDate = DateTime.Now,
                 Status = Status.Waiting,
                 Details = borrowingDetails

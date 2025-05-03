@@ -26,7 +26,7 @@ namespace LibPort.Controllers
         }
 
         [HttpGet("books")]
-        public async Task<ActionResult<List<ShowBook>>> ListBooks(
+        public async Task<ActionResult> ListBooks(
             [FromQuery] string? _page,
             [FromQuery] string? _perPage
             )
@@ -34,15 +34,26 @@ namespace LibPort.Controllers
             if (string.IsNullOrWhiteSpace(_page))
             {
                 var allBooks = await _bookService.ListAsync();
-                return allBooks.Select(b => b.ToShow()).ToList();
+                return Ok(allBooks.Select(b => b.ToShow()).ToList());
             }
             else
             {
                 var pageParseSuccess = int.TryParse(_page, out var page);
                 var perPageParseSuccess = int.TryParse(_perPage, out var perPage);
                 if (!(pageParseSuccess && perPageParseSuccess)) return BadRequest("Could not parse the query");
-                var pageBook = await _bookService.GetPagination(page, perPage);
-                return pageBook.Select(b => b.ToShow()).ToList();
+                var pagination = await _bookService.GetPaginationAsync(page, perPage);
+                var result = new PaginationResponse<ShowBook>
+                {
+                    First = pagination.First,
+                    Last = pagination.Last,
+                    Current = pagination.Current,
+                    Next = pagination.Next,
+                    Prev = pagination.Prev,
+                    Total = pagination.Total,
+                    Pages = pagination.Pages,
+                    Items = pagination.Items.Select(b => b.ToShow()).ToList()
+                };
+                return Ok(result);
             }
         }
 

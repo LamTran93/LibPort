@@ -42,6 +42,16 @@ namespace LibPort.Middlewares.ExceptionHandlers
                     problemDetails.Title = "Data conflict";
                     problemDetails.Detail = exception.Message;
                     break;
+                case BookExceedLimitException:
+                    problemDetails.Status = StatusCodes.Status400BadRequest;
+                    problemDetails.Title = "Book limit exceeded";
+                    problemDetails.Detail = exception.Message;
+                    break;
+                case ExceedRequestLimitException:
+                    problemDetails.Status = StatusCodes.Status400BadRequest;
+                    problemDetails.Title = "Request litmit exceeded";
+                    problemDetails.Detail = exception.Message;
+                    break;
                 default:
                     problemDetails.Status = StatusCodes.Status500InternalServerError;
                     problemDetails.Title = "Internal Server Error";

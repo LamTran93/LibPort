@@ -11,6 +11,6 @@ namespace LibPort.Services.BorrowingRequest
         public Task<BookBorrowingRequest> CreateAsync(BookBorrowingRequest request);
         public Task ApproveRequest(Guid id);
         public Task RejectRequest(Guid id);
-        public Task RequestBorrowingBooks(User user, List<Guid> bookIds);
+        public Task RequestBorrowingBooks(Guid userId, List<Guid> bookIds);
     }
 }

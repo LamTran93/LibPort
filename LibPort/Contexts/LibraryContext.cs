@@ -14,6 +14,7 @@ namespace LibPort.Contexts
         public DbSet<Category> Categories { get; set; }
         public DbSet<BookBorrowingRequest> BookBorrowingRequests { get; set; }
         public DbSet<BookBorrowingRequestDetails> BookBorrowingRequestDetails { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

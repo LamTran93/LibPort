@@ -8,6 +8,8 @@
         public string Author { get; set; }
         public int Quantity { get; set; }
         public int Total { get; set; }
+        public double RatingAverage { get; set; }
+        public List<ShowReview> Reviews { get; set; }
 
         public ShowCategory Category { get; set; }
     }
