@@ -1309,7 +1309,7 @@ namespace LibPort.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
-                    b.Property<Guid>("ApproverId")
+                    b.Property<Guid?>("ApproverId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1577,8 +1577,7 @@ namespace LibPort.Migrations
                     b.HasOne("LibPort.Models.User", "Approver")
                         .WithMany()
                         .HasForeignKey("ApproverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("LibPort.Models.User", "Requestor")
                         .WithMany("BorrowingRequests")

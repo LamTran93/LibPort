@@ -98,12 +98,21 @@ namespace LibPort.Services.BorrowingRequest
 
         public async Task<List<BookBorrowingRequest>> ListAsync()
         {
-            return await _context.BookBorrowingRequests.ToListAsync();
+            return await _context.BookBorrowingRequests
+                .Include(r => r.Details)
+                .ThenInclude(d => d.Book)
+                .ThenInclude(b => b.Category)
+                .ToListAsync();
         }
 
         public async Task<List<BookBorrowingRequest>> ListWhereAsync(Expression<Func<BookBorrowingRequest, bool>> predicate)
         {
-            return await _context.BookBorrowingRequests.Where(predicate).ToListAsync();
+            return await _context.BookBorrowingRequests
+                .Include(r => r.Details)
+                .ThenInclude(d => d.Book)
+                .ThenInclude(b => b.Category)
+                .Where(predicate)
+                .ToListAsync();
         }
     }
 }

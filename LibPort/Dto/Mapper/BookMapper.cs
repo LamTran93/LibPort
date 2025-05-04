@@ -18,8 +18,8 @@ namespace LibPort.Dto.Mapper
                 Quantity = book.Quantity,
                 Total = book.Total,
                 Description = book.Description,
-                Reviews = book.Reviews.Select(r => r.ToShow()).ToList(),
-                RatingAverage = book.Reviews.Count > 0 ? book.Reviews.Average(r => r.Rating) : 0
+                Reviews = book.Reviews?.Select(r => r.ToShow()).ToList(),
+                RatingAverage = book.Reviews?.Count > 0 ? book.Reviews.Average(r => r.Rating) : 0
             };
         }
 

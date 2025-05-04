@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibPort.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20250503194644_Init")]
+    [Migration("20250504092009_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -1312,7 +1312,7 @@ namespace LibPort.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
-                    b.Property<Guid>("ApproverId")
+                    b.Property<Guid?>("ApproverId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1580,8 +1580,7 @@ namespace LibPort.Migrations
                     b.HasOne("LibPort.Models.User", "Approver")
                         .WithMany()
                         .HasForeignKey("ApproverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("LibPort.Models.User", "Requestor")
                         .WithMany("BorrowingRequests")

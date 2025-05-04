@@ -64,6 +64,7 @@ namespace LibPort.Controllers
             [FromQuery] string? _page,
             [FromQuery] string? _perPage,
             [FromQuery] string? title,
+            [FromQuery] string? author,
             [FromQuery] string? isAvailable,
             [FromQuery] string? minimumRating,
             [FromQuery] string? categoryId
@@ -73,6 +74,7 @@ namespace LibPort.Controllers
             if (string.IsNullOrWhiteSpace(_perPage)) { _perPage = "10"; }
             var options = new FilterOption();
             options.Title = title;
+            options.Author = author;
             if (bool.TryParse(isAvailable, out var parsedAvailable))
                 options.IsAvailable = parsedAvailable;
             if (int.TryParse(minimumRating, out var parsedMinimumRating))
@@ -124,7 +126,7 @@ namespace LibPort.Controllers
             var userId = HttpContext.User.FindFirst("user_id")?.Value;
             if (userId == null) return Unauthorized("User Id not found");
             var userGuid = Guid.Parse(userId);
-            var requestList = await _borrowingRequestService.ListWhereAsync(r => r.Id == userGuid);
+            var requestList = await _borrowingRequestService.ListWhereAsync(r => r.RequestorId == userGuid);
             return requestList.Select(r => r.ToShow()).ToList();
         }
 

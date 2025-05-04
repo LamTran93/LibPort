@@ -27,7 +27,7 @@ namespace LibPort.Services.BookService
                 .Take(perPage)
                 .ToListAsync();
             var bookQuantity = await _context.Books.CountAsync();
-            result.Pages = bookQuantity / perPage;
+            result.Pages = (bookQuantity / perPage) + (bookQuantity % perPage > 0 ? 1 : 0);
             result.Last = result.Pages;
             result.Total = bookQuantity;
             result.First = 1;
@@ -46,6 +46,8 @@ namespace LibPort.Services.BookService
                 .AsQueryable();
             if (!string.IsNullOrWhiteSpace(options.Title))
                 items = items.Where(b => EF.Functions.Like(b.Title, $"%{options.Title}%"));
+            if (!string.IsNullOrWhiteSpace(options.Author))
+                items = items.Where(b => EF.Functions.Like(b.Author, $"%{options.Author}%"));
             if (options.CategoryId != null)
                 items = items.Where(b => b.CategoryId == options.CategoryId);
             if (options.IsAvailable == true)
@@ -60,7 +62,7 @@ namespace LibPort.Services.BookService
                 .Take(perPage)
                 .ToListAsync();
             var bookQuantity = await items.CountAsync();
-            result.Pages = bookQuantity / perPage;
+            result.Pages = (bookQuantity / perPage) + (bookQuantity % perPage > 0 ? 1 : 0);
             result.Last = result.Pages;
             result.Total = bookQuantity;
             result.First = 1;

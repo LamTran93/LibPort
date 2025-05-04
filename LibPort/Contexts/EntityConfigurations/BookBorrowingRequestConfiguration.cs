@@ -34,6 +34,7 @@ namespace LibPort.Contexts.EntityConfigurations
             builder.HasOne(r => r.Approver)
                 .WithMany()
                 .HasForeignKey(r => r.ApproverId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

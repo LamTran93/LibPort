@@ -3,7 +3,7 @@
     public class BookBorrowingRequest : BaseEntity<Guid>
     {
         public Guid RequestorId { get; set; }
-        public Guid ApproverId { get; set; }
+        public Guid? ApproverId { get; set; }
         public DateTime RequestedDate { get; set; }
         public Status Status { get; set; }
 

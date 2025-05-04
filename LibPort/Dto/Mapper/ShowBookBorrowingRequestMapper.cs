@@ -22,8 +22,6 @@ namespace LibPort.Dto.Mapper
             return new ShowBookBorrowingRequest
             {
                 Id = entity.Id,
-                RequestorId = entity.RequestorId,
-                ApproverId = entity.ApproverId,
                 RequestedDate = entity.RequestedDate,
                 Status = entity.Status,
                 Requestor = entity.Requestor?.ToShow(),
