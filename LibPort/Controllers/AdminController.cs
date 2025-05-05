@@ -57,6 +57,48 @@ namespace LibPort.Controllers
             }
         }
 
+        [HttpGet("books/filter")]
+        public async Task<ActionResult> FilterBooks(
+            [FromQuery] string? _page,
+            [FromQuery] string? _perPage,
+            [FromQuery] string? title,
+            [FromQuery] string? author,
+            [FromQuery] string? isAvailable,
+            [FromQuery] string? minimumRating,
+            [FromQuery] string? categoryId
+            )
+        {
+            if (string.IsNullOrWhiteSpace(_page)) { _page = "1"; }
+            if (string.IsNullOrWhiteSpace(_perPage)) { _perPage = "10"; }
+            var options = new FilterOption();
+            options.Title = title;
+            options.Author = author;
+            if (bool.TryParse(isAvailable, out var parsedAvailable))
+                options.IsAvailable = parsedAvailable;
+            if (int.TryParse(minimumRating, out var parsedMinimumRating))
+                options.MinimumRating = parsedMinimumRating;
+            if (int.TryParse(categoryId, out var parsedCategoryId))
+                options.CategoryId = parsedCategoryId;
+
+            var pageParseSuccess = int.TryParse(_page, out var page);
+            var perPageParseSuccess = int.TryParse(_perPage, out var perPage);
+            if (!(pageParseSuccess && perPageParseSuccess)) return BadRequest("Could not parse the query");
+            var pagination = await _bookService.FilterAsync(options, page, perPage);
+            var result = new PaginationResponse<ShowBook>
+            {
+                First = pagination.First,
+                Last = pagination.Last,
+                Current = pagination.Current,
+                Next = pagination.Next,
+                Prev = pagination.Prev,
+                Total = pagination.Total,
+                Pages = pagination.Pages,
+                Items = pagination.Items.Select(b => b.ToShow()).ToList()
+            };
+            return Ok(result);
+
+        }
+
         [HttpGet("books/{id}")]
         public async Task<ActionResult<ShowBook>> GetBook(string id)
         {

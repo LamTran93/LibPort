@@ -17,6 +17,8 @@ namespace LibPort.Services.CategoryService
         public async Task<Category> CreateAsync(Category category)
         {
             category.Id = default;
+            if (await _context.Categories.AnyAsync(c => EF.Functions.Like(c.Name, $"%{category.Name}%")))
+                throw new AlreadyExistException($"Category {category.Name} is already existed");
             var newCategory = _context.Categories.Add(category);
             await _context.SaveChangesAsync();
             return newCategory.Entity;

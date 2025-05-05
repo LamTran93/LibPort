@@ -25,6 +25,9 @@ namespace LibPort.Contexts.EntityConfigurations
                 .IsRequired()
                 .HasMaxLength(100);
 
+            builder.Property(b => b.CategoryId)
+                .IsRequired(false);
+
             builder.Property(b => b.Version)
                 .IsRowVersion();
 
@@ -38,7 +41,7 @@ namespace LibPort.Contexts.EntityConfigurations
             builder.HasOne(b => b.Category)
                 .WithMany(c => c.Books)
                 .HasForeignKey(b => b.CategoryId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(b => b.Reviews)
                 .WithOne(r => r.Book)

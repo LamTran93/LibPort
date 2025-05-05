@@ -74,12 +74,12 @@ namespace LibPort.Services.BookService
 
         public async Task<List<Book>> ListAsync()
         {
-            return await _context.Books.Include(b => b.Reviews).ToListAsync();
+            return await _context.Books.Include(b => b.Category).Include(b => b.Reviews).ToListAsync();
         }
 
         public async Task<Book?> GetAsync(Guid id)
         {
-            return await _context.Books.FindAsync(id);
+            return await _context.Books.Include(b => b.Category).Include(b => b.Reviews).FirstOrDefaultAsync(b => b.Id == id);
         }
 
         public async Task<Book> CreateAsync(Book book)
@@ -92,9 +92,14 @@ namespace LibPort.Services.BookService
 
         public async Task UpdateAsync(Book book)
         {
-            var isBookExisted = await _context.Books.AnyAsync(b => b.Id.Equals(book.Id));
-            if (!isBookExisted) throw new NotFoundException($"Book id {book.Id} not found");
-            _context.Books.Update(book);
+            var dbBook = await _context.Books.FindAsync(book.Id);
+            if (dbBook == null) throw new NotFoundException($"Book id {book.Id} not found");
+            dbBook.Title = book.Title;
+            dbBook.Author = book.Author;
+            dbBook.Description = book.Description;
+            dbBook.CategoryId = book.CategoryId;
+            dbBook.Quantity = book.Quantity;
+            dbBook.Total = book.Total;
             await _context.SaveChangesAsync();
         }
 

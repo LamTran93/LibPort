@@ -99,6 +99,7 @@ namespace LibPort.Services.BorrowingRequest
         public async Task<List<BookBorrowingRequest>> ListAsync()
         {
             return await _context.BookBorrowingRequests
+                .OrderBy(r => r.RequestedDate)
                 .Include(r => r.Details)
                 .ThenInclude(d => d.Book)
                 .ThenInclude(b => b.Category)

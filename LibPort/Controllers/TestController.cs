@@ -1,4 +1,5 @@
 ﻿using LibPort.Contexts;
+using LibPort.Exceptions;
 using LibPort.Models;
 using LibPort.Services.Authentication;
 using LibPort.Services.BookService;
@@ -26,5 +27,12 @@ namespace LibPort.Controllers
             _context.SaveChanges();
             return Ok();
         }
+
+        [HttpGet("error")]
+        public IActionResult ThrowError()
+        {
+            throw new BookExceedLimitException("Lỗi");
+        }
+
     }
 }

@@ -48,7 +48,7 @@ namespace LibPort.Services.Jwt
         public string RenewAccessToken(IEnumerable<Claim> claims)
         {
             return GenerateToken(claims
-                .Where(c => c.Type != "iat" && c.Type != "aud" && c.Type != "type")
+                .Where(c => c.Type != "iat" && c.Type != "type")
                 .Append(new Claim("type", "access_token")), _accessTokenExpireTime);
         }
 

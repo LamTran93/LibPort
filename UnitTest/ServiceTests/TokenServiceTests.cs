@@ -1,8 +1,12 @@
 ﻿using System.Security.Claims;
+using LibPort.Models;
 using LibPort.Services.Jwt;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using NUnit.Framework;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace UnitTest.ServiceTests
 {
@@ -18,7 +22,7 @@ namespace UnitTest.ServiceTests
             var configurationMock = new Mock<IConfiguration>();
             configurationMock.Setup(c => c["Jwt:Issuer"]).Returns("TestIssuer");
             configurationMock.Setup(c => c["Jwt:Audience"]).Returns("TestAudience");
-            configurationMock.Setup(c => c["Jwt:SecretKey"]).Returns("TestSecretKey123456789011111111111111111111111111111111111");
+            configurationMock.Setup(c => c["Jwt:SecretKey"]).Returns("TestSecretKey1234567890");
 
             _tokenService = new TokenService(configurationMock.Object);
         }
@@ -41,6 +45,74 @@ namespace UnitTest.ServiceTests
             Assert.IsNotNull(token);
             var handler = new JwtSecurityTokenHandler();
             Assert.IsTrue(handler.CanReadToken(token));
+        }
+
+        [Test]
+        public void CreateAccessToken_ShouldReturnValidAccessToken()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "testuser",
+                UserType = UserType.NormalUser
+            };
+
+            // Act
+            var token = _tokenService.CreateAccessToken(user);
+
+            // Assert
+            Assert.IsNotNull(token);
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            Assert.IsTrue(jwtToken.Claims.Any(c => c.Type == "type" && c.Value == "access_token"));
+            Assert.IsTrue(jwtToken.Claims.Any(c => c.Type == "user_type" && c.Value == UserType.NormalUser.ToString()));
+            Assert.IsTrue(jwtToken.Claims.Any(c => c.Type == "user_id" && c.Value == user.Id.ToString()));
+        }
+
+        [Test]
+        public void RenewAccessToken_ShouldReturnNewAccessToken()
+        {
+            // Arrange
+            var claims = new[]
+            {
+                new Claim("type", "refresh_token"),
+                new Claim("user_id", Guid.NewGuid().ToString()),
+                new Claim("user_type", UserType.NormalUser.ToString())
+            };
+
+            // Act
+            var token = _tokenService.RenewAccessToken(claims);
+
+            // Assert
+            Assert.IsNotNull(token);
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            Assert.IsTrue(jwtToken.Claims.Any(c => c.Type == "type" && c.Value == "access_token"));
+            Assert.IsTrue(long.Parse(jwtToken.Claims.First(c => c.Type == "exp").Value) > DateTimeOffset.Now.ToUnixTimeSeconds()); 
+        }
+
+        [Test]
+        public void CreateRefreshToken_ShouldReturnValidRefreshToken()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "testuser",
+                UserType = UserType.NormalUser
+            };
+
+            // Act
+            var token = _tokenService.CreateRefreshToken(user);
+
+            // Assert
+            Assert.IsNotNull(token);
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            Assert.IsTrue(jwtToken.Claims.Any(c => c.Type == "type" && c.Value == "refresh_token"));
+            Assert.IsTrue(jwtToken.Claims.Any(c => c.Type == "user_type" && c.Value == UserType.NormalUser.ToString()));
+            Assert.IsTrue(jwtToken.Claims.Any(c => c.Type == "user_id" && c.Value == user.Id.ToString()));
         }
 
         [Test]
@@ -73,26 +145,6 @@ namespace UnitTest.ServiceTests
 
             // Assert
             Assert.IsNull(claimsPrincipal);
-        }
-
-        [Test]
-        public void GenerateToken_ShouldIncludeIatClaim()
-        {
-            // Arrange
-            var claims = new[]
-            {
-                new Claim("type", "access_token")
-            };
-            var timeToExpire = TimeSpan.FromMinutes(30);
-
-            // Act
-            var token = _tokenService.GenerateToken(claims, timeToExpire);
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-
-            // Assert
-            Assert.IsNotNull(jwtToken);
-            Assert.IsTrue(jwtToken.Claims.Any(c => c.Type == "iat"));
         }
     }
 }

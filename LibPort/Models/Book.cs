@@ -7,7 +7,7 @@
         public string Author { get; set; }
         public int Quantity { get; set; }
         public int Total { get; set; }
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
 
         public Category Category { get; set; }
         public ICollection<Review> Reviews { get; set; }

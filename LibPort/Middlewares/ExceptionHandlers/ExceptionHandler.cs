@@ -49,7 +49,7 @@ namespace LibPort.Middlewares.ExceptionHandlers
                     break;
                 case ExceedRequestLimitException:
                     problemDetails.Status = StatusCodes.Status400BadRequest;
-                    problemDetails.Title = "Request litmit exceeded";
+                    problemDetails.Title = "Request limit exceeded";
                     problemDetails.Detail = exception.Message;
                     break;
                 default:
@@ -58,6 +58,9 @@ namespace LibPort.Middlewares.ExceptionHandlers
                     problemDetails.Detail = exception.Message;
                     break;
             }
+
+            httpContext.Response.StatusCode = problemDetails.Status ?? StatusCodes.Status500InternalServerError;
+            httpContext.Response.ContentType = "application/json";
 
             await httpContext.Response
                 .WriteAsJsonAsync(problemDetails, cancellationToken);
