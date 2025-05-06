@@ -39,6 +39,10 @@ namespace LibPort.Contexts.EntityConfigurations
                 .WithOne(r => r.Requestor)
                 .HasForeignKey(r => r.RequestorId)
                 .OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(u => u.Reviews)
+                .WithOne(r => r.User)
+                .HasForeignKey(r =>r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

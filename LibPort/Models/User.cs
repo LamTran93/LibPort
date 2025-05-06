@@ -8,5 +8,6 @@
         public UserType UserType { get; set; }
 
         public ICollection<BookBorrowingRequest> BorrowingRequests { get; set; }
+        public ICollection<Review> Reviews { get; set; }
     }
 }

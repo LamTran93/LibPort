@@ -23,8 +23,8 @@ namespace LibPort.Controllers
         private readonly IReviewService _reviewService;
 
         public UserController(
-            IBookService bookService, 
-            ICategoryService categoryService, 
+            IBookService bookService,
+            ICategoryService categoryService,
             IBorrowingRequestService borrowingRequestService,
             IReviewService reviewService
             )
@@ -65,6 +65,15 @@ namespace LibPort.Controllers
                 };
                 return Ok(result);
             }
+        }
+
+        [HttpGet("books/{id}")]
+        public async Task<ActionResult<ShowBook>> GetBook(string id)
+        {
+            if (!Guid.TryParse(id, out var bookId)) return BadRequest("Not a valid Id");
+            var book = await _bookService.GetAsync(bookId);
+            if (book == null) throw new NotFoundException($"Book id {id} not found");
+            return Ok(book.ToShow());
         }
 
         [HttpGet("books/filter")]
@@ -145,11 +154,21 @@ namespace LibPort.Controllers
             return allCategories.Select(b => b.ToShow()).ToList();
         }
 
-        [HttpPost("review")]
+        [HttpPost("reviews")]
         public async Task<ActionResult<ShowReview>> CreateReview(RequestReview request)
         {
+            request.UserId = Guid.Parse(HttpContext.User.FindFirst("user_id")!.Value);
             await _reviewService.AddReviewAsync(request.ToEntity());
             return Created();
+        }
+
+        [HttpGet("reviews/{bookId}")]
+        public async Task<ActionResult<List<ShowReview>>> GetReviews(string bookId)
+        {
+            if (string.IsNullOrWhiteSpace(bookId) || !Guid.TryParse(bookId, out var id))
+                return BadRequest("Invalid book id");
+            var reviewList = await _reviewService.GetReviewsAsync(id);
+            return reviewList.Select(r => r.ToShow()).ToList();
         }
     }
 }

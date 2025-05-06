@@ -13,6 +13,7 @@ namespace LibPort.Dto.Mapper
                 Id = show.Id,
                 Rating = show.Rating,
                 Comment = show.Comment,
+                User = show.User?.ToEntity(),
             };
         }
 
@@ -23,6 +24,7 @@ namespace LibPort.Dto.Mapper
                 Id = review.Id,
                 Rating = review.Rating,
                 Comment = review.Comment,
+                User = review.User?.ToShow()
             };
         }
 
@@ -33,6 +35,7 @@ namespace LibPort.Dto.Mapper
                 Rating = request.Rating,
                 Comment = request.Comment,
                 BookId = request.BookId,
+                UserId = request.UserId,
             };
         }
     }

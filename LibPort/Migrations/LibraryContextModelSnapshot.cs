@@ -1514,9 +1514,14 @@ namespace LibPort.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BookId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
                 });
@@ -1616,7 +1621,15 @@ namespace LibPort.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("LibPort.Models.User", "User")
+                        .WithMany("Reviews")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Book");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LibPort.Models.Book", b =>
@@ -1637,6 +1650,8 @@ namespace LibPort.Migrations
             modelBuilder.Entity("LibPort.Models.User", b =>
                 {
                     b.Navigation("BorrowingRequests");
+
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }

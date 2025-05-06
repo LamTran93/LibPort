@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibPort.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20250504092009_Init")]
+    [Migration("20250506145100_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -37,7 +37,7 @@ namespace LibPort.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1517,9 +1517,14 @@ namespace LibPort.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BookId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
                 });
@@ -1569,8 +1574,7 @@ namespace LibPort.Migrations
                     b.HasOne("LibPort.Models.Category", "Category")
                         .WithMany("Books")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Category");
                 });
@@ -1620,7 +1624,15 @@ namespace LibPort.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("LibPort.Models.User", "User")
+                        .WithMany("Reviews")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Book");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LibPort.Models.Book", b =>
@@ -1641,6 +1653,8 @@ namespace LibPort.Migrations
             modelBuilder.Entity("LibPort.Models.User", b =>
                 {
                     b.Navigation("BorrowingRequests");
+
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }
