@@ -6,9 +6,10 @@ using LibPort.Services.BookService;
 using LibPort.Services.BorrowingRequest;
 using LibPort.Services.CategoryService;
 using LibPort.Services.Jwt;
+using LibPort.Services.ReviewService;
+using LibPort.Services.UserService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -76,6 +77,8 @@ namespace LibPort
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IBorrowingRequestService, BorrowingRequestService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
 
             builder.Services.AddCors();
 

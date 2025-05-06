@@ -6,6 +6,7 @@ using LibPort.Models;
 using LibPort.Services.BookService;
 using LibPort.Services.BorrowingRequest;
 using LibPort.Services.CategoryService;
+using LibPort.Services.ReviewService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,12 +20,19 @@ namespace LibPort.Controllers
         private readonly IBookService _bookService;
         private readonly ICategoryService _categoryService;
         private readonly IBorrowingRequestService _borrowingRequestService;
+        private readonly IReviewService _reviewService;
 
-        public UserController(IBookService bookService, ICategoryService categoryService, IBorrowingRequestService borrowingRequestService)
+        public UserController(
+            IBookService bookService, 
+            ICategoryService categoryService, 
+            IBorrowingRequestService borrowingRequestService,
+            IReviewService reviewService
+            )
         {
             _bookService = bookService;
             _categoryService = categoryService;
             _borrowingRequestService = borrowingRequestService;
+            _reviewService = reviewService;
         }
 
         [HttpGet("books")]
@@ -135,6 +143,13 @@ namespace LibPort.Controllers
         {
             var allCategories = await _categoryService.ListAsync();
             return allCategories.Select(b => b.ToShow()).ToList();
+        }
+
+        [HttpPost("review")]
+        public async Task<ActionResult<ShowReview>> CreateReview(RequestReview request)
+        {
+            await _reviewService.AddReviewAsync(request.ToEntity());
+            return Created();
         }
     }
 }

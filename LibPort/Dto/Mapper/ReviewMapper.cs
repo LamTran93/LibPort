@@ -1,4 +1,5 @@
-﻿using LibPort.Dto.Response;
+﻿using LibPort.Dto.Request;
+using LibPort.Dto.Response;
 using LibPort.Models;
 
 namespace LibPort.Dto.Mapper
@@ -22,6 +23,16 @@ namespace LibPort.Dto.Mapper
                 Id = review.Id,
                 Rating = review.Rating,
                 Comment = review.Comment,
+            };
+        }
+
+        public static Review ToEntity(this RequestReview request)
+        {
+            return new Review
+            {
+                Rating = request.Rating,
+                Comment = request.Comment,
+                BookId = request.BookId,
             };
         }
     }

@@ -17,10 +17,15 @@ namespace LibPort.Services.UserService
 
         public async Task<User> CreateAsync(User user)
         {
-            user.Id = Guid.Empty;
-            var newUser = _context.Users.Add(user);
+            if (user.Id != Guid.Empty) user.Id = Guid.NewGuid();
+            var isUsernameAndEmailExisted = await _context.Users
+                .AnyAsync(u => u.Username == user.Username || u.Email == user.Email);
+            if (isUsernameAndEmailExisted)
+                throw new AlreadyExistException("Username or email already existed");
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            var result = await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
-            return newUser.Entity;
+            return result.Entity;
         }
 
         public async Task DeleteAsync(Guid id)
@@ -36,7 +41,7 @@ namespace LibPort.Services.UserService
             return await _context.Users.FindAsync(id);
         }
 
-        public async Task<List<User>> List(Expression<Func<User, bool>> predicate)
+        public async Task<List<User>> ListWhereAsync(Expression<Func<User, bool>> predicate)
         {
             return await _context.Users.Where(predicate).ToListAsync();
         }
@@ -50,9 +55,21 @@ namespace LibPort.Services.UserService
         {
             var dbUser = await _context.Users.FindAsync(user.Id);
             if (dbUser == null) throw new NotFoundException($"User id {user.Id} not found");
+            var isUsernameAndEmailExisted = await _context.Users
+                .AnyAsync(u => u.Id != user.Id && (u.Username == user.Username || u.Email == user.Email));
+            if (isUsernameAndEmailExisted)
+                throw new AlreadyExistException("Username or email already existed");
             dbUser.Username = user.Username;
             dbUser.Email = user.Email;
             dbUser.UserType = user.UserType;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AssignRole(Guid id, UserType role)
+        {
+            var dbUser = await _context.Users.FindAsync(id);
+            if (dbUser == null) throw new NotFoundException($"User id {id} not found");
+            dbUser.UserType = role;
             await _context.SaveChangesAsync();
         }
     }

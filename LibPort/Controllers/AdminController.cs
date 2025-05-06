@@ -6,6 +6,11 @@ using LibPort.Services.CategoryService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using LibPort.Services.BorrowingRequest;
+using LibPort.Models;
+using LibPort.Services.UserService;
+using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
+using LibPort.Exceptions;
 
 namespace LibPort.Controllers
 {
@@ -17,12 +22,19 @@ namespace LibPort.Controllers
         private readonly IBookService _bookService;
         private readonly ICategoryService _categoryService;
         private readonly IBorrowingRequestService _borrowingService;
+        private readonly IUserService _userService;
 
-        public AdminController(IBookService bookService, ICategoryService categoryService, IBorrowingRequestService borrowingService)
+        public AdminController(
+            IBookService bookService,
+            ICategoryService categoryService,
+            IBorrowingRequestService borrowingService,
+            IUserService userService
+            )
         {
             _bookService = bookService;
             _categoryService = categoryService;
             _borrowingService = borrowingService;
+            _userService = userService;
         }
 
         [HttpGet("books")]
@@ -162,7 +174,7 @@ namespace LibPort.Controllers
         [HttpPost("categories")]
         public async Task<ActionResult<ShowCategory>> CreateCategory(ShowCategory category)
         {
-            if (string.IsNullOrEmpty(category.Name))
+            if (string.IsNullOrWhiteSpace(category.Name))
                 return BadRequest("Category name is required");
 
             var entity = await _categoryService.CreateAsync(category.ToEntity());
@@ -211,6 +223,73 @@ namespace LibPort.Controllers
             var parseSuccess = Guid.TryParse(id, out var requestId);
             if (!parseSuccess) return BadRequest("Not a vadid id");
             await _borrowingService.RejectRequest(requestId);
+            return NoContent();
+        }
+
+        [HttpGet("users")]
+        public async Task<ActionResult<List<ShowUser>>> GetUsers([FromQuery] string? keyword)
+        {
+            List<User> users;
+            if (string.IsNullOrWhiteSpace(keyword))
+                users = await _userService.ListAsync();
+            else users = await _userService
+                .ListWhereAsync(u => EF.Functions.Like(u.Username, $"%{keyword}%"));
+            return Ok(users.Select(u => u.ToShow()).ToList());
+        }
+
+        [HttpGet("users/{id}")]
+        public async Task<ActionResult<ShowUser>> GetUser(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out var userId))
+                return BadRequest("Not an valid Id");
+            var user = await _userService.GetAsync(userId);
+            if (user == null) throw new NotFoundException($"User id {id} not found");
+            return Ok(user.ToShow());
+        }
+
+        [HttpPost("users")]
+        public async Task<ActionResult<ShowUser>> CreateUser(RequestUser user)
+        {
+            if (string.IsNullOrWhiteSpace(user.Username))
+                return BadRequest("Username is required");
+            if (string.IsNullOrWhiteSpace(user.Password))
+                return BadRequest("Password is required");
+            if (string.IsNullOrWhiteSpace(user.Email))
+                return BadRequest("Email is required");
+            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            if (!emailRegex.IsMatch(user.Email))
+                return BadRequest("Invalid email format");
+
+            var entity = await _userService.CreateAsync(user.ToEntity());
+            return CreatedAtAction("GetCategory", new { id = entity.Id }, entity);
+
+        }
+
+        [HttpPut("users/{id}")]
+        public async Task<ActionResult> EditUser(string id, ShowUser user)
+        {
+            if (!id.Equals(user.Id.ToString())) return BadRequest();
+
+            await _userService.UpdateAsync(user.ToEntity());
+            return NoContent();
+
+        }
+
+        [HttpDelete("users/{id}")]
+        public async Task<ActionResult> DeleteUser(string id)
+        {
+            if (!Guid.TryParse(id, out var userId))
+                return BadRequest("Not a valid Id");
+            await _userService.DeleteAsync(userId);
+            return NoContent();
+        }
+
+        [HttpPut("users/{id}/roles")]
+        public async Task<ActionResult> AssignRole(string id, [FromQuery] UserType type)
+        {
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out var userId))
+                return BadRequest("Not a valid Id");
+            await _userService.AssignRole(userId, type);
             return NoContent();
         }
     }

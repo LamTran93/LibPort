@@ -100,6 +100,7 @@ namespace LibPort.Services.BorrowingRequest
         {
             return await _context.BookBorrowingRequests
                 .OrderBy(r => r.RequestedDate)
+                .Include(r => r.Requestor)
                 .Include(r => r.Details)
                 .ThenInclude(d => d.Book)
                 .ThenInclude(b => b.Category)

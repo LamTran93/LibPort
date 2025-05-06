@@ -52,6 +52,11 @@ namespace LibPort.Middlewares.ExceptionHandlers
                     problemDetails.Title = "Request limit exceeded";
                     problemDetails.Detail = exception.Message;
                     break;
+                case AlreadyExistException:
+                    problemDetails.Status = StatusCodes.Status409Conflict;
+                    problemDetails.Title = "Already Exist Exception";
+                    problemDetails.Detail = exception.Message;
+                    break;
                 default:
                     problemDetails.Status = StatusCodes.Status500InternalServerError;
                     problemDetails.Title = "Internal Server Error";

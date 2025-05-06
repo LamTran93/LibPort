@@ -39,7 +39,7 @@ namespace LibPort.Services.Authentication
             var isUsernameAndEmailExisted = await _context.Users
                 .AnyAsync(u => u.Username == user.Username || u.Email == user.Email);
             if (isUsernameAndEmailExisted)
-                throw new NotValidIdException("Username or email already existed");
+                throw new AlreadyExistException("Username or email already existed");
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             var result = await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
